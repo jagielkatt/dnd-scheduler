@@ -1,0 +1,103 @@
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  min-height: 600px;
+
+  .card-container {
+    padding: 10px;
+    background: aliceblue;
+  }
+
+  .shift {
+    display: flex;
+    gap: 10px;
+    justify-content: space-evenly;
+    padding: 10px;
+    background-color: bisque;
+
+    &__box {
+      display: flex;
+      flex-direction: column;
+      width: 80px;
+      text-align: center;
+    }
+
+    .shift__row {
+      border: 2px solid black;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      width: 100%;
+      height: 100%;
+
+      .shift__spot {
+        display: flex;
+        border-bottom: 1px dotted black;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        padding: 2px;
+
+        &--active {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background-color: #fff;
+          border: 2px solid black;
+          border-radius: 10%;
+          min-height: 90%;
+          width: 90%;
+          text-align: center;
+        }
+      }
+    }
+  }
+}
+
+.menu-container {
+  padding: 10px;
+
+  &__button-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  &__button {
+    background-color: transparent;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.card-list {
+  display: flex;
+  gap: 2px 5px;
+  flex-wrap: wrap;
+}
+
+.box {
+  background-color: #fff;
+  border: 2px solid black;
+  border-radius: 10%;
+  min-width: 108px;
+  height: 40px;
+  cursor: grab;
+
+  &--active {
+    cursor: grabbing;
+    box-shadow: 5px 10px 10px hsl(0deg 0% 0% / 0.34);
+  }
+
+  &:hover {
+    background-color: aqua;
+  }
+}
+
+.button {
+  background-color: transparent;
+  border: none;
+  flex-shrink: 0;
+  cursor: pointer;
+}

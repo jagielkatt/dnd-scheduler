@@ -1,0 +1,14 @@
+.card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  padding: 4px 0 4px 4px;
+
+  &-button {
+    background-color: transparent;
+    border: none;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+}
