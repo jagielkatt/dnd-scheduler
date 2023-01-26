@@ -4,6 +4,11 @@ import { CardContent } from "./components/cardContent/CardContent";
 import { TextField } from "./components/textField/TextField";
 import styles from "./Scheduler.module.scss";
 
+interface Ticket {
+  id: number;
+  text: string;
+}
+
 export const Scheduler = () => {
   const container = useRef<HTMLDivElement>(null);
   const mousePosition = useMousePosition(container);
@@ -14,9 +19,21 @@ export const Scheduler = () => {
   }>();
   const shiftSpotRefs = useRef<Array<HTMLDivElement | null>>([]);
   const cardsRef = useRef<Array<HTMLDivElement | null>>([]);
-  const [cards, setCards] = useState<string[]>([...Array(40)]);
+  const [cards, setCards] = useState<Ticket[]>(
+    [...Array(40)].map((el, index) => ({
+      id: index,
+      text: "",
+    }))
+  );
   const [shifts] = useState([...Array(5)].map((v, i) => i));
-  const [shiftSpots, setShiftSpots] = useState<string[]>([...Array(40)]);
+  const [shiftSpots, setShiftSpots] = useState<
+    { id: number; ticket?: Ticket }[]
+  >(
+    [...Array(40)].map((el, index) => ({
+      id: index,
+      ticket: undefined,
+    }))
+  );
   const [textFieldset, setTextFieldset] = useState("");
 
   const calculatePosition = useCallback(() => {
@@ -43,7 +60,7 @@ export const Scheduler = () => {
       <div className={styles.grid} ref={container}>
         <div className={styles["card-container"]}>
           <div className={styles["card-list"]}>
-            {cards.map((item, index) => {
+            {cards.map((ticket, index) => {
               const isActiveElemet =
                 typeof activeElement !== "undefined" &&
                 activeElement === cardsRef.current[index];
@@ -66,6 +83,9 @@ export const Scheduler = () => {
                     setActiveElement(undefined);
                   }}
                   onMouseDown={(event) => {
+                    if (event.button !== 0) {
+                      return;
+                    }
                     if (cardsRef.current[index] === null) {
                       return;
                     }
@@ -94,7 +114,7 @@ export const Scheduler = () => {
 
                     if (shiftSpot && shiftId) {
                       const temp = [...shiftSpots];
-                      temp[shiftId] = item;
+                      temp[shiftId].ticket = ticket;
                       setShiftSpots(temp);
                       setCards((pre) => [
                         ...pre.slice(0, index),
@@ -107,10 +127,10 @@ export const Scheduler = () => {
                   <CardContent
                     setText={(text: string) => {
                       const temp = [...cards];
-                      temp[index] = text;
+                      temp[index].text = text;
                       setCards(temp);
                     }}
-                    textValue={typeof item === "string" ? item : ""}
+                    textValue={ticket.text}
                   />
                 </div>
               );
@@ -133,9 +153,45 @@ export const Scheduler = () => {
                           ref={(el) => (shiftSpotRefs.current[index] = el)}
                           key={index}
                         >
-                          {item && (
+                          {item.ticket?.text && (
                             <div className={styles["shift__spot--active"]}>
-                              {item}
+                              {item.ticket.text}
+                              <button
+                                type="button"
+                                className={styles.button}
+                                onClick={(event) => {
+                                  if (typeof item.ticket === "undefined") {
+                                    return;
+                                  }
+                                  const tempCards = [...cards];
+                                  tempCards.push(item.ticket);
+                                  setCards(tempCards);
+                                  const tempShifts = [...shiftSpots];
+                                  tempShifts[item.id].ticket = undefined;
+                                  setShiftSpots(tempShifts);
+                                }}
+                              >
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 20 20"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    clipRule="evenodd"
+                                    d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18ZM10 20C15.5228 20 20 15.5228 20 10C20 4.47715 15.5228 0 10 0C4.47715 0 0 4.47715 0 10C0 15.5228 4.47715 20 10 20Z"
+                                    fill="black"
+                                  />
+                                  <path
+                                    fillRule="evenodd"
+                                    clipRule="evenodd"
+                                    d="M13.5355 6.46447C13.9261 6.85499 13.9261 7.48816 13.5355 7.87868L11.4142 10L13.5355 12.1213C13.9261 12.5118 13.9261 13.145 13.5355 13.5355C13.145 13.9261 12.5118 13.9261 12.1213 13.5355L10 11.4142L7.87868 13.5355C7.48816 13.9261 6.85499 13.9261 6.46447 13.5355C6.07394 13.145 6.07394 12.5118 6.46447 12.1213L8.58579 10L6.46447 7.87868C6.07394 7.48816 6.07394 6.85499 6.46447 6.46447C6.85499 6.07394 7.48816 6.07394 7.87868 6.46447L10 8.58579L12.1213 6.46447C12.5118 6.07394 13.145 6.07394 13.5355 6.46447Z"
+                                    fill="black"
+                                  />
+                                </svg>
+                              </button>
                             </div>
                           )}
                         </div>

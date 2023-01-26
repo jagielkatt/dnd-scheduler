@@ -19,7 +19,7 @@
     &__box {
       display: flex;
       flex-direction: column;
-      width: 80px;
+      width: 150px;
       text-align: center;
     }
 
@@ -30,6 +30,7 @@
       justify-content: space-evenly;
       width: 100%;
       height: 100%;
+      max-height: 500px;
 
       .shift__spot {
         display: flex;
@@ -40,8 +41,9 @@
         padding: 2px;
 
         &--active {
+          word-break: break-all;
           display: flex;
-          justify-content: center;
+          justify-content: space-between;
           align-items: center;
           background-color: #fff;
           border: 2px solid black;
@@ -49,6 +51,7 @@
           min-height: 90%;
           width: 90%;
           text-align: center;
+          padding-left: 10px;
         }
       }
     }
