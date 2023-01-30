@@ -111,8 +111,7 @@ export const Scheduler = () => {
                         return isDroppedInShiftSpot;
                       }
                     );
-
-                    if (shiftSpot && shiftId) {
+                    if (shiftSpot && typeof shiftId === "number") {
                       const temp = [...shiftSpots];
                       temp[shiftId].ticket = ticket;
                       setShiftSpots(temp);
@@ -209,10 +208,10 @@ export const Scheduler = () => {
           <TextField setTextFieldset={setTextFieldset} />
           <button
             onClick={() => {
-              const newCards = [...Array(cards.length)];
+              const newCards = [...cards];
               textFieldset
                 .split(",")
-                .forEach((word, index) => (newCards[index] = word));
+                .forEach((word, index) => (newCards[index].text = word));
               setCards(newCards);
             }}
             className={styles["menu-container__button"]}

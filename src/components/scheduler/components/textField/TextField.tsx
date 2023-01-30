@@ -16,8 +16,7 @@ export const TextField = ({
         setText(event.target.value);
         setTextFieldset(event.target.value);
       }}
-    >
-      {text}
-    </textarea>
+      value={text}
+    />
   );
 };
