@@ -11,4 +11,30 @@
     flex-shrink: 0;
     cursor: pointer;
   }
+
+  &__edit-modal {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: absolute;
+    top: 50vh;
+    left: 50vw;
+    transform: translate(-50%, -50%);
+    border: 1px solid var(--border-color);
+    background-color: var(--card-background-color);
+    padding: 10px;
+    height: 150px;
+    width: 200px;
+
+    &-button {
+      background-color: var(--button-color);
+      border-radius: 4px;
+      cursor: pointer;
+      align-self: flex-end;
+
+      &:hover {
+        background: var(--hover-color);
+      }
+    }
+  }
 }

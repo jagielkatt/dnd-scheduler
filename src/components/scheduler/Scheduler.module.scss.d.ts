@@ -1,4 +1,5 @@
 declare const classNames: {
+  readonly scheduler: "scheduler";
   readonly grid: "grid";
   readonly "card-container": "card-container";
   readonly shift: "shift";
@@ -6,10 +7,12 @@ declare const classNames: {
   readonly shift__row: "shift__row";
   readonly shift__spot: "shift__spot";
   readonly "shift__spot--active": "shift__spot--active";
+  readonly "shift__spot--active--grabbed": "shift__spot--active--grabbed";
   readonly "menu-container": "menu-container";
   readonly "menu-container__button-wrapper": "menu-container__button-wrapper";
   readonly "menu-container__button": "menu-container__button";
   readonly "card-list": "card-list";
+  readonly "empty-box": "empty-box";
   readonly box: "box";
   readonly "box--active": "box--active";
   readonly button: "button";

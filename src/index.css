@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+*:focus-visible {
+  outline-color: var(--border-color);
+}
+
 * {
   margin: 0;
 }
@@ -17,6 +21,7 @@ body {
 body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  color: var(--font-color);
 }
 
 img,
@@ -47,4 +52,12 @@ h6 {
 
 .app {
   margin: 0 20px;
+}
+
+:root {
+  --background-color: #d8eefe;
+  --font-color: #094067;
+  --card-background-color: #fffffe;
+  --border-color: #094067;
+  --hover-color: #3da9fc;
 }
