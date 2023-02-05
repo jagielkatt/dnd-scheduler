@@ -1,3 +1,7 @@
+.scheduler {
+  padding: 2px 4px;
+}
+
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -6,7 +10,8 @@
 
   .card-container {
     padding: 10px;
-    background: aliceblue;
+    background: var(--background-color);
+    border: 1px solid var(--border-color);
   }
 
   .shift {
@@ -14,7 +19,8 @@
     gap: 10px;
     justify-content: space-evenly;
     padding: 10px;
-    background-color: bisque;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
 
     &__box {
       display: flex;
@@ -24,7 +30,7 @@
     }
 
     .shift__row {
-      border: 2px solid black;
+      border: 2px solid var(--border-color);
       display: flex;
       flex-direction: column;
       justify-content: space-evenly;
@@ -34,7 +40,7 @@
 
       .shift__spot {
         display: flex;
-        border-bottom: 1px dotted black;
+        border-bottom: 1px dotted var(--border-color);
         justify-content: center;
         align-items: center;
         height: 100%;
@@ -45,13 +51,20 @@
           display: flex;
           justify-content: space-between;
           align-items: center;
-          background-color: #fff;
+          background-color: var(--card-background-color);
           border: 2px solid black;
           border-radius: 10%;
           min-height: 90%;
           width: 90%;
           text-align: center;
           padding-left: 10px;
+          cursor: grab;
+
+          &--grabbed {
+            background-color: var(--hover-color);
+            box-shadow: 5px 10px 10px hsl(0deg 0% 0% / 0.34);
+            cursor: grabbing;
+          }
         }
       }
     }
@@ -80,27 +93,43 @@
   flex-wrap: wrap;
 }
 
+.empty-box {
+  min-width: 108px;
+  height: 40px;
+}
+
 .box {
-  background-color: #fff;
+  background-color: var(--card-background-color);
   border: 2px solid black;
   border-radius: 10%;
   min-width: 108px;
   height: 40px;
   cursor: grab;
+  transition: box-shadow 0.1s;
+  box-shadow: none;
 
   &--active {
+    animation: scale 100ms;
     cursor: grabbing;
     box-shadow: 5px 10px 10px hsl(0deg 0% 0% / 0.34);
-  }
-
-  &:hover {
-    background-color: aqua;
+    background-color: var(--hover-color);
   }
 }
 
 .button {
-  background-color: transparent;
-  border: none;
-  flex-shrink: 0;
+  all: unset;
+  padding-right: 6px;
   cursor: pointer;
+}
+
+@keyframes scale {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }

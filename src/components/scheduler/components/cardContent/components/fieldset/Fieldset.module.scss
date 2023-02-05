@@ -1,0 +1,9 @@
+.fieldset {
+  all: unset;
+
+  input {
+    &:focus-visible {
+      outline-color: var(--border-color);
+    }
+  }
+}
