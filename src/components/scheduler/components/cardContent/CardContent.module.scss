@@ -5,11 +5,21 @@
   height: 100%;
   padding: 4px 0 4px 4px;
 
-  &-button {
+  &__button {
     background-color: transparent;
     border: none;
     flex-shrink: 0;
     cursor: pointer;
+    color: inherit;
+  }
+
+  &__colors {
+    display: flex;
+    gap: 4px;
+  }
+  &__color-button {
+    width: 25px;
+    aspect-ratio: 1;
   }
 
   &__edit-modal {
@@ -31,6 +41,7 @@
       border-radius: 4px;
       cursor: pointer;
       align-self: flex-end;
+      color: inherit;
 
       &:hover {
         background: var(--hover-color);

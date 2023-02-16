@@ -1,16 +1,23 @@
 import React, { useCallback, useRef, useState } from "react";
+import {
+  useEditContext,
+  useCards,
+  useIsEditMode,
+  useShiftSpots,
+} from "../../context/EditContext";
 import { useMousePosition } from "../../hooks/useMousePosition";
 import { Icon } from "../icons/Icon";
 import { CardContent } from "./components/cardContent/CardContent";
+import { RowLabel } from "./components/rowLabel/RowLabel";
 import { TextField } from "./components/textField/TextField";
 import styles from "./Scheduler.module.scss";
 
-export interface Ticket {
-  id: number;
-  text: string | null;
-}
-
 export const Scheduler = () => {
+  const { state: editContext, setState: setEditContext } = useEditContext();
+  const { cards, setCards } = useCards();
+  const { shiftSpots, setShiftSpots } = useShiftSpots();
+  const { isEditMode, toggleEditMode } = useIsEditMode();
+
   const container = useRef<HTMLDivElement>(null);
   const mousePosition = useMousePosition(container);
   const [activeElement, setActiveElement] = useState<HTMLDivElement | null>();
@@ -20,21 +27,6 @@ export const Scheduler = () => {
   }>();
   const shiftSpotRefs = useRef<Array<HTMLDivElement | null>>([]);
   const cardsRef = useRef<Array<HTMLDivElement | null>>([]);
-  const [cards, setCards] = useState<Ticket[]>(
-    [...Array(40)].map((e, i) => ({
-      id: i,
-      text: "",
-    }))
-  );
-  const [shifts] = useState([...Array(5)].map((v, i) => i));
-  const [shiftSpots, setShiftSpots] = useState<
-    { id: number; ticket?: Ticket }[]
-  >(
-    [...Array(40)].map((e, i) => ({
-      id: i,
-      ticket: undefined,
-    }))
-  );
   const [textFieldset, setTextFieldset] = useState("");
 
   const calculatePosition = useCallback(() => {
@@ -78,6 +70,26 @@ export const Scheduler = () => {
 
   return (
     <div className={styles.scheduler}>
+      <button
+        className={`${styles.toggle} ${isEditMode && styles["toggle--active"]}`}
+        type="button"
+        onClick={() => {
+          toggleEditMode();
+        }}
+      >
+        {isEditMode ? "Stop editing" : "Start editing"}
+      </button>
+      <button
+        className={styles.toggle}
+        type="button"
+        onClick={() => {
+          localStorage.removeItem("cards");
+          localStorage.removeItem("shifts");
+          window.location.reload();
+        }}
+      >
+        Reset
+      </button>
       <div className={styles.grid} ref={container}>
         <div className={styles["card-container"]}>
           <div className={styles["card-list"]}>
@@ -101,6 +113,8 @@ export const Scheduler = () => {
                           calculatePosition()?.y
                         }px)`
                       : "",
+                    background: ticket.color,
+                    color: ticket.color === "#003057" ? "#FFF" : "",
                   }}
                   draggable="false"
                   onClick={(event) => {
@@ -126,9 +140,10 @@ export const Scheduler = () => {
                       }
                     );
                     if (shiftSpot && typeof shiftId === "number") {
-                      const temp = [...shiftSpots];
+                      const temp = JSON.parse(JSON.stringify(shiftSpots));
                       temp[shiftId].ticket = ticket;
-                      const tempCards = [...cards];
+                      setShiftSpots(temp);
+                      const tempCards = JSON.parse(JSON.stringify(cards));
                       tempCards[index] = { id: ticket.id, text: null };
                       setCards(tempCards);
                     }
@@ -136,6 +151,7 @@ export const Scheduler = () => {
                   }}
                 >
                   <CardContent
+                    ticketId={ticket.id}
                     setText={(text: string) => {
                       const temp = [...cards];
                       temp[index].text = text;
@@ -149,7 +165,19 @@ export const Scheduler = () => {
           </div>
         </div>
         <div className={styles.shift}>
-          {shifts.map((i, outerIndex) => {
+          <div className={styles["shift__label-row"]}>
+            {editContext.rowLabels.map((row, i) => (
+              <RowLabel
+                text={row}
+                setLabel={(text) => {
+                  const temp = [...editContext.rowLabels];
+                  temp[i] = text;
+                  setEditContext({ rowLabels: temp });
+                }}
+              />
+            ))}
+          </div>
+          {[...Array(5)].map((e, outerIndex) => {
             return (
               <div key={outerIndex} className={styles.shift__box}>
                 <h2>Skift {outerIndex + 1}</h2>
@@ -167,7 +195,7 @@ export const Scheduler = () => {
                           ref={(el) => (shiftSpotRefs.current[index] = el)}
                           key={index}
                         >
-                          {item.ticket?.text && (
+                          {item.ticket && (
                             <div
                               className={`${styles["shift__spot--active"]} ${
                                 isActiveElement &&
@@ -179,6 +207,9 @@ export const Scheduler = () => {
                                       calculatePosition()?.y
                                     }px)`
                                   : "",
+                                background: item.ticket.color,
+                                color:
+                                  item.ticket.color === "#003057" ? "#FFF" : "",
                               }}
                               draggable="false"
                               onClick={(event) => {
@@ -205,18 +236,23 @@ export const Scheduler = () => {
                                   }
                                 );
                                 if (shiftSpot && typeof shiftId === "number") {
-                                  const temp = [...shiftSpots];
+                                  /* const temp = [...shiftSpots]; */
+                                  const temp = JSON.parse(
+                                    JSON.stringify(shiftSpots)
+                                  );
                                   let tempTicket;
 
                                   if (item.ticket) {
-                                    tempTicket = { ...item.ticket };
-                                    temp[shiftId].ticket = { ...item.ticket };
-                                    item.ticket = undefined;
+                                    tempTicket = JSON.parse(
+                                      JSON.stringify(item.ticket)
+                                    );
+                                    temp[item.id].ticket = undefined;
                                   }
                                   if (tempTicket) {
                                     temp[shiftId].ticket = {
                                       id: tempTicket.id,
                                       text: tempTicket.text,
+                                      color: tempTicket.color,
                                     };
                                   }
                                   setShiftSpots(temp);
@@ -232,10 +268,14 @@ export const Scheduler = () => {
                                   if (typeof item.ticket === "undefined") {
                                     return;
                                   }
-                                  const tempCards = [...cards];
+                                  const tempCards = JSON.parse(
+                                    JSON.stringify(cards)
+                                  );
                                   tempCards[item.ticket.id] = item.ticket;
                                   setCards(tempCards);
-                                  const tempShifts = [...shiftSpots];
+                                  const tempShifts = JSON.parse(
+                                    JSON.stringify(shiftSpots)
+                                  );
                                   tempShifts[item.id].ticket = undefined;
                                   setShiftSpots(tempShifts);
                                 }}

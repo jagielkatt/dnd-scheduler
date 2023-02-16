@@ -1,68 +1,74 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "../../../icons/Icon";
+import { EditModal } from "../editModal/EditModal";
 
 import styles from "./CardContent.module.scss";
-import { Fieldset } from "./components/fieldset/Fieldset";
+import { Fieldset } from "../fieldset/Fieldset";
+import { useCards, useIsEditMode } from "../../../../context/EditContext";
+
+const levelColors = ["#003057", "#fde24f", "#ff5470"];
 
 export const CardContent: React.FunctionComponent<{
-  textValue: string;
-  setText: (text: string) => void;
-}> = ({ textValue, setText }) => {
-  const [localText, setLocalText] = useState(textValue);
+  textValue?: string;
+  setText?: (text: string) => void;
+  ticketId: number;
+}> = ({ textValue, setText, ticketId }) => {
+  const { cards, setCards } = useCards();
   const [edit, setEdit] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const firstInputRef = useRef<HTMLInputElement>(null);
+  const { isEditMode } = useIsEditMode();
 
   useEffect(() => {
     if (!edit) {
       return;
     }
-    inputRef.current?.focus();
+    firstInputRef.current?.focus();
   }, [edit]);
 
   return (
     <div className={styles["card-content"]}>
-      <span style={{ flexBasis: "80%" }}>{textValue}</span>
+      <span>{textValue}</span>
       <button
         onClick={() => {
+          if (!isEditMode) {
+            return;
+          }
           setEdit(!edit);
         }}
-        className={styles["card-content-button"]}
+        className={styles["card-content__button"]}
       >
-        <Icon.Tick />
+        {isEditMode && <Icon.Tick />}
       </button>
       {edit &&
         createPortal(
-          <div
-            className={styles["card-content__edit-modal"]}
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            onMouseDown={(event) => {
-              event.stopPropagation();
-            }}
-            onMouseUp={(event) => {
-              event.stopPropagation();
-            }}
-          >
+          <EditModal setEdit={setEdit}>
             <Fieldset
               label="Name"
-              value={localText}
-              setValue={setLocalText}
-              ref={inputRef}
-            />
-            <button
-              onClick={(event) => {
-                setEdit(!edit);
-                setText(localText);
-                event.stopPropagation();
-                event.preventDefault();
+              value={cards[ticketId].text || ""}
+              setValue={(text) => {
+                const temp = JSON.parse(JSON.stringify(cards));
+                temp[ticketId].text = text;
+                setCards(temp);
               }}
-              className={styles["card-content__edit-modal-button"]}
-            >
-              Done
-            </button>
-          </div>,
+              ref={firstInputRef}
+            />
+            <div className={styles["card-content__colors"]}>
+              {levelColors.map((color) => (
+                <button
+                  onClick={(event) => {
+                    const temp = JSON.parse(JSON.stringify(cards));
+                    temp[ticketId].color = color;
+                    setCards(temp);
+                    event.stopPropagation();
+                    event.preventDefault();
+                  }}
+                  className={styles["card-content__color-button"]}
+                  style={{ background: color }}
+                />
+              ))}
+            </div>
+          </EditModal>,
           document.body
         )}
     </div>
