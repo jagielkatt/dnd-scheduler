@@ -21,12 +21,30 @@
     padding: 10px;
     background-color: var(--background-color);
     border: 1px solid var(--border-color);
+    font-weight: bold;
 
     &__box {
       display: flex;
       flex-direction: column;
-      width: 150px;
+      width: 130px;
       text-align: center;
+    }
+
+    .shift__label-row {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      text-align: center;
+      height: 100%;
+      max-height: 500px;
+      margin-top: 36px;
+
+      div {
+        min-width: 100px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+      }
     }
 
     .shift__row {
@@ -107,6 +125,7 @@
   cursor: grab;
   transition: box-shadow 0.1s;
   box-shadow: none;
+  font-weight: bold;
 
   &--active {
     animation: scale 100ms;
@@ -120,6 +139,23 @@
   all: unset;
   padding-right: 6px;
   cursor: pointer;
+  color: inherit;
+}
+
+.toggle {
+  all: unset;
+  cursor: pointer;
+  color: inherit;
+  border: 2px solid var(--border-color);
+  padding: 2px 5px;
+  border-radius: 5px;
+  margin: 0 5px 5px 0;
+  font-weight: bold;
+
+  &--active {
+    background-color: #90b4ce;
+    color: #fff;
+  }
 }
 
 @keyframes scale {

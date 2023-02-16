@@ -4,6 +4,7 @@ declare const classNames: {
   readonly "card-container": "card-container";
   readonly shift: "shift";
   readonly shift__box: "shift__box";
+  readonly "shift__label-row": "shift__label-row";
   readonly shift__row: "shift__row";
   readonly shift__spot: "shift__spot";
   readonly "shift__spot--active": "shift__spot--active";
@@ -16,5 +17,7 @@ declare const classNames: {
   readonly box: "box";
   readonly "box--active": "box--active";
   readonly button: "button";
+  readonly toggle: "toggle";
+  readonly "toggle--active": "toggle--active";
 };
 export = classNames;
