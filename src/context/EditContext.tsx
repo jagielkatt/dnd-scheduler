@@ -6,13 +6,23 @@ import React, {
   useEffect,
 } from "react";
 
+const DEFAULT_ROW_NAMES = [
+  "row 1",
+  "row 2",
+  "row 3",
+  "row 4",
+  "row 5",
+  "row 6",
+  "row 7",
+  "row 8",
+];
 export interface Ticket {
   id: number;
   text: string | null;
   color?: string;
 }
 
-interface ShiftSpot {
+export interface ShiftSpot {
   id: number;
   ticket?: Ticket;
 }
@@ -45,16 +55,6 @@ export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
 }) => {
   const [state, setState] = useReducer(stateReducer, {
     isEditMode: true,
-    rowLabels: [
-      "row 1",
-      "row 2",
-      "row 3",
-      "row 4",
-      "row 5",
-      "row 6",
-      "row 7",
-      "row 8",
-    ],
     cards: localStorage.getItem("cards")
       ? JSON.parse(localStorage.getItem("cards")!)
       : [...Array(40)].map((e, i) => ({
@@ -68,6 +68,9 @@ export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
           id: i,
           ticket: undefined,
         })),
+    rowLabels: localStorage.getItem("row_labels")
+      ? JSON.parse(localStorage.getItem("row_labels")!)
+      : DEFAULT_ROW_NAMES,
   });
 
   useEffect(() => {
@@ -77,6 +80,10 @@ export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
   useEffect(() => {
     localStorage.setItem("shifts", JSON.stringify(state.shiftSpots));
   }, [state.shiftSpots]);
+
+  useEffect(() => {
+    localStorage.setItem("row_labels", JSON.stringify(state.rowLabels));
+  }, [state.rowLabels]);
 
   return (
     <EditContext.Provider value={{ state, setState }}>
