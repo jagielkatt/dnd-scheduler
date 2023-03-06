@@ -16,6 +16,13 @@ const DEFAULT_ROW_NAMES = [
   "row 7",
   "row 8",
 ];
+const DEFAULT_COL_NAMES = [
+  "Skift A",
+  "Skift B",
+  "Skift C",
+  "Skift D",
+  "Skift E",
+];
 export interface Ticket {
   id: number;
   text: string | null;
@@ -30,6 +37,7 @@ export interface ShiftSpot {
 export interface EditContextState {
   isEditMode: boolean;
   rowLabels: string[];
+  columnLabels: string[];
   cards: Ticket[];
   shiftSpots: ShiftSpot[];
 }
@@ -71,6 +79,9 @@ export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
     rowLabels: localStorage.getItem("row_labels")
       ? JSON.parse(localStorage.getItem("row_labels")!)
       : DEFAULT_ROW_NAMES,
+    columnLabels: localStorage.getItem("col_labels")
+      ? JSON.parse(localStorage.getItem("col_labels")!)
+      : DEFAULT_COL_NAMES,
   });
 
   useEffect(() => {
@@ -84,6 +95,10 @@ export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
   useEffect(() => {
     localStorage.setItem("row_labels", JSON.stringify(state.rowLabels));
   }, [state.rowLabels]);
+
+  useEffect(() => {
+    localStorage.setItem("col_labels", JSON.stringify(state.columnLabels));
+  }, [state.columnLabels]);
 
   return (
     <EditContext.Provider value={{ state, setState }}>

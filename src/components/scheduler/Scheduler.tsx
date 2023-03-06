@@ -9,6 +9,7 @@ import {
 import { useMousePosition } from "../../hooks/useMousePosition";
 import { Icon } from "../icons/Icon";
 import { CardContent } from "./components/cardContent/CardContent";
+import { ColumnLabel } from "./components/colLabel/ColumnLabel";
 import { RowLabel } from "./components/rowLabel/RowLabel";
 import { TextField } from "./components/textField/TextField";
 import styles from "./Scheduler.module.scss";
@@ -86,6 +87,7 @@ export const Scheduler = () => {
           localStorage.removeItem("cards");
           localStorage.removeItem("shifts");
           localStorage.removeItem("row_labels");
+          localStorage.removeItem("col_labels");
           window.location.reload();
         }}
       >
@@ -192,7 +194,14 @@ export const Scheduler = () => {
           {[...Array(5)].map((e, outerIndex) => {
             return (
               <div key={outerIndex} className={styles.shift__box}>
-                <h2>Skift {outerIndex + 1}</h2>
+                <ColumnLabel
+                  text={editContext.columnLabels[outerIndex]}
+                  setLabel={(text) => {
+                    const temp = [...editContext.columnLabels];
+                    temp[outerIndex] = text;
+                    setEditContext({ columnLabels: temp });
+                  }}
+                />
                 <div className={styles.shift__row}>
                   {shiftSpots
                     .slice(outerIndex * 8, outerIndex * 8 + 8)
