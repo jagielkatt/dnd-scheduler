@@ -1,0 +1,8 @@
+.col-label {
+  display: flex;
+  align-items: center;
+
+  &__header {
+    flex-basis: 80%;
+  }
+}
