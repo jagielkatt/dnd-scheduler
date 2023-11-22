@@ -6,16 +6,6 @@ import React, {
   useEffect,
 } from "react";
 
-const DEFAULT_ROW_NAMES = [
-  "row 1",
-  "row 2",
-  "row 3",
-  "row 4",
-  "row 5",
-  "row 6",
-  "row 7",
-  "row 8",
-];
 const DEFAULT_COL_NAMES = [
   "Skift A",
   "Skift B",
@@ -58,6 +48,9 @@ function stateReducer(
   return { ...state, ...newState };
 }
 
+export const NBR_OF_ENTRIES = 60;
+export const NBR_OF_SHIFTS = 5;
+
 export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
   children,
 }) => {
@@ -65,20 +58,22 @@ export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
     isEditMode: true,
     cards: localStorage.getItem("cards")
       ? JSON.parse(localStorage.getItem("cards")!)
-      : [...Array(40)].map((e, i) => ({
+      : [...Array(NBR_OF_ENTRIES)].map((e, i) => ({
           id: i,
           text: "",
           color: "#FFF",
         })),
     shiftSpots: localStorage.getItem("shifts")
       ? JSON.parse(localStorage.getItem("shifts")!)
-      : [...Array(40)].map((e, i) => ({
+      : [...Array(NBR_OF_ENTRIES)].map((e, i) => ({
           id: i,
           ticket: undefined,
         })),
     rowLabels: localStorage.getItem("row_labels")
       ? JSON.parse(localStorage.getItem("row_labels")!)
-      : DEFAULT_ROW_NAMES,
+      : [...Array(NBR_OF_ENTRIES / NBR_OF_SHIFTS)].map((_, index) => {
+          return `Rad ${index + 1}`;
+        }),
     columnLabels: localStorage.getItem("col_labels")
       ? JSON.parse(localStorage.getItem("col_labels")!)
       : DEFAULT_COL_NAMES,
