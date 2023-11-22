@@ -5,6 +5,8 @@ import {
   useIsEditMode,
   useShiftSpots,
   ShiftSpot,
+  NBR_OF_ENTRIES,
+  NBR_OF_SHIFTS,
 } from "../../context/EditContext";
 import { useMousePosition } from "../../hooks/useMousePosition";
 import { Icon } from "../icons/Icon";
@@ -68,6 +70,8 @@ export const Scheduler = () => {
     setGrabCoordinates({ x: event.clientX, y: event.clientY });
     setActiveElement(element);
   };
+
+  const entriesPerColumn = NBR_OF_ENTRIES / NBR_OF_SHIFTS;
 
   return (
     <div className={styles.scheduler}>
@@ -191,7 +195,7 @@ export const Scheduler = () => {
               />
             ))}
           </div>
-          {[...Array(5)].map((e, outerIndex) => {
+          {[...Array(NBR_OF_SHIFTS)].map((e, outerIndex) => {
             return (
               <div key={outerIndex} className={styles.shift__box}>
                 <ColumnLabel
@@ -204,9 +208,12 @@ export const Scheduler = () => {
                 />
                 <div className={styles.shift__row}>
                   {shiftSpots
-                    .slice(outerIndex * 8, outerIndex * 8 + 8)
+                    .slice(
+                      outerIndex * entriesPerColumn,
+                      outerIndex * entriesPerColumn + entriesPerColumn
+                    )
                     .map((item, innerIndex) => {
-                      const index = innerIndex + outerIndex * 8;
+                      const index = innerIndex + outerIndex * entriesPerColumn;
                       const isActiveElement =
                         typeof activeElement !== "undefined" &&
                         activeElement === shiftSpotRefs.current[index];

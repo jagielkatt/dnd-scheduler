@@ -7,7 +7,7 @@ import styles from "./CardContent.module.scss";
 import { Fieldset } from "../fieldset/Fieldset";
 import { useCards, useIsEditMode } from "../../../../context/EditContext";
 
-const levelColors = ["#003057", "#fde24f", "#ff5470"];
+const levelColors = ["#003057", "#fde24f", "#ff5470", "lightgreen", "hotpink"];
 
 export const CardContent: React.FunctionComponent<{
   textValue?: string;
