@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "../../../icons/Icon";
 import { Fieldset } from "../fieldset/Fieldset";
 import { EditModal } from "../editModal/EditModal";
-import { useIsEditMode } from "../../../../context/EditContext";
 
 import styles from "./ColumnLabel.module.scss";
+import { useEditMode } from "../../../../hooks/useEditMode";
 
 export const ColumnLabel = ({
   text,
@@ -16,12 +16,11 @@ export const ColumnLabel = ({
 }) => {
   const [edit, setEdit] = useState(false);
   const firstInputRef = useRef<HTMLInputElement>(null);
-  const { isEditMode } = useIsEditMode();
+  const { isEditMode } = useEditMode();
 
   useEffect(() => {
-    if (!edit) {
-      return;
-    }
+    if (!edit) return;
+
     firstInputRef.current?.focus();
   }, [edit]);
 
@@ -37,7 +36,7 @@ export const ColumnLabel = ({
         }}
       >
         <h2 className={styles["col-label__header"]}>{text}</h2>
-        {isEditMode && <Icon.Tick />}
+        {isEditMode && <Icon.Edit />}
       </div>
       {edit &&
         createPortal(

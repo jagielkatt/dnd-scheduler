@@ -1,12 +1,10 @@
 import React, { useRef, useState } from "react";
 import {
-  useEditContext,
-  useCards,
-  useIsEditMode,
-  useShiftSpots,
   ShiftSpot,
   NBR_OF_ENTRIES,
   NBR_OF_SHIFTS,
+  Ticket,
+  Colors,
 } from "../../context/EditContext";
 import { useMousePosition } from "../../hooks/useMousePosition";
 import { Icon } from "../icons/Icon";
@@ -15,12 +13,17 @@ import { ColumnLabel } from "./components/colLabel/ColumnLabel";
 import { RowLabel } from "./components/rowLabel/RowLabel";
 import { TextField } from "./components/textField/TextField";
 import styles from "./Scheduler.module.scss";
+import shiftSpotStyles from "./ShiftSpot.module.scss";
+import { useCards } from "../../hooks/useCards";
+import { useShiftSpots } from "../../hooks/useShiftSpots";
+import { useEditMode } from "../../hooks/useEditMode";
+import { useEditContext } from "../../context/useEditContext";
 
 export const Scheduler = () => {
   const { state: editContext, setState: setEditContext } = useEditContext();
   const { cards, setCards } = useCards();
   const { shiftSpots, setShiftSpots } = useShiftSpots();
-  const { isEditMode, toggleEditMode } = useIsEditMode();
+  const { isEditMode, toggleEditMode } = useEditMode();
   const container = useRef<HTMLDivElement>(null);
   const mousePosition = useMousePosition(container);
   const [activeElement, setActiveElement] = useState<HTMLDivElement | null>();
@@ -28,11 +31,13 @@ export const Scheduler = () => {
     x: number;
     y: number;
   }>();
-  const shiftSpotRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const shiftSpotRefs = useRef<
+    Array<{ element: HTMLDivElement | null; boundingClientRect: DOMRect }>
+  >([]);
   const cardsRef = useRef<Array<HTMLDivElement | null>>([]);
   const [textFieldset, setTextFieldset] = useState("");
 
-  const calculatePosition = () => {
+  const calculateTransformCoordinates = () => {
     const containerBounds = container.current?.getBoundingClientRect();
     if (
       mousePosition.x === null ||
@@ -42,6 +47,7 @@ export const Scheduler = () => {
     ) {
       return;
     }
+
     return {
       x: mousePosition.x - grabCoordinates.x,
       y: mousePosition.y - grabCoordinates.y,
@@ -49,9 +55,8 @@ export const Scheduler = () => {
   };
 
   const isDroppedInBounds = (bounds: DOMRect) => {
-    if (!mousePosition.x || !mousePosition.y) {
-      return false;
-    }
+    if (!mousePosition.x || !mousePosition.y) return false;
+
     return (
       mousePosition.x > bounds.left &&
       mousePosition.x < bounds.right &&
@@ -64,39 +69,22 @@ export const Scheduler = () => {
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
     element: HTMLDivElement | null
   ) => {
-    if (event.button !== 0 || element === null) {
-      return;
-    }
+    if (event.button !== 0 || element === null) return;
+
     setGrabCoordinates({ x: event.clientX, y: event.clientY });
     setActiveElement(element);
   };
 
-  const entriesPerColumn = NBR_OF_ENTRIES / NBR_OF_SHIFTS;
+  const getDroppedIntoShiftSpotId = () => {
+    return shiftSpotRefs.current.findIndex((item) =>
+      isDroppedInBounds(item.boundingClientRect)
+    );
+  };
 
+  const entriesPerColumn = NBR_OF_ENTRIES / NBR_OF_SHIFTS;
+  const position = activeElement && calculateTransformCoordinates();
   return (
     <div className={styles.scheduler}>
-      <button
-        className={`${styles.toggle} ${isEditMode && styles["toggle--active"]}`}
-        type="button"
-        onClick={() => {
-          toggleEditMode();
-        }}
-      >
-        {isEditMode ? "Stop editing" : "Start editing"}
-      </button>
-      <button
-        className={styles.toggle}
-        type="button"
-        onClick={() => {
-          localStorage.removeItem("cards");
-          localStorage.removeItem("shifts");
-          localStorage.removeItem("row_labels");
-          localStorage.removeItem("col_labels");
-          window.location.reload();
-        }}
-      >
-        Reset
-      </button>
       <div className={styles.grid} ref={container}>
         <div className={styles["card-container"]}>
           <div className={styles["card-list"]}>
@@ -107,6 +95,7 @@ export const Scheduler = () => {
               const isActiveElement =
                 typeof activeElement !== "undefined" &&
                 activeElement === cardsRef.current[index];
+
               return (
                 <div
                   key={ticket.id}
@@ -116,37 +105,20 @@ export const Scheduler = () => {
                   }`}
                   style={{
                     transform: isActiveElement
-                      ? `translate(${calculatePosition()?.x}px, ${
-                          calculatePosition()?.y
-                        }px)`
+                      ? `translate(${position?.x}px, ${position?.y}px)`
                       : "",
-                    background: ticket.color,
-                    color: ticket.color === "#003057" ? "#FFF" : "",
+                    ...getColorStyles(ticket.color),
                   }}
                   draggable="false"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                  }}
+                  onClick={(event) => event.stopPropagation()}
                   onMouseDown={(event) =>
                     onMouseDown(event, cardsRef.current[index])
                   }
-                  onMouseUp={(event) => {
-                    let shiftId;
-                    const shiftSpot = shiftSpotRefs.current.find(
-                      (item, index) => {
-                        if (!item) {
-                          return false;
-                        }
-                        const isDroppedInShiftSpot = isDroppedInBounds(
-                          item.getBoundingClientRect()
-                        );
-                        if (isDroppedInShiftSpot) {
-                          shiftId = index;
-                        }
-                        return isDroppedInShiftSpot;
-                      }
-                    );
-                    if (shiftSpot && typeof shiftId === "number") {
+                  onMouseUp={() => {
+                    const shiftId = getDroppedIntoShiftSpotId();
+                    const isDroppedInShiftSpot = shiftId > -1;
+
+                    if (isDroppedInShiftSpot) {
                       const temp: ShiftSpot[] = JSON.parse(
                         JSON.stringify(shiftSpots)
                       );
@@ -156,7 +128,10 @@ export const Scheduler = () => {
                           : undefined;
                       temp[shiftId].ticket = ticket;
                       setShiftSpots(temp);
-                      const tempCards = JSON.parse(JSON.stringify(cards));
+
+                      const tempCards: Ticket[] = JSON.parse(
+                        JSON.stringify(cards)
+                      );
                       tempCards[index] = existingCardInSpot
                         ? {
                             id: ticket.id,
@@ -165,18 +140,11 @@ export const Scheduler = () => {
                         : { id: ticket.id, text: null };
                       setCards(tempCards);
                     }
+                    setGrabCoordinates(undefined);
                     setActiveElement(undefined);
                   }}
                 >
-                  <CardContent
-                    ticketId={ticket.id}
-                    setText={(text: string) => {
-                      const temp = [...cards];
-                      temp[index].text = text;
-                      setCards(temp);
-                    }}
-                    textValue={ticket.text}
-                  />
+                  <CardContent ticketId={ticket.id} textValue={ticket.text} />
                 </div>
               );
             })}
@@ -185,17 +153,10 @@ export const Scheduler = () => {
         <div className={styles.shift}>
           <div className={styles["shift__label-row"]}>
             {editContext.rowLabels.map((row, i) => (
-              <RowLabel
-                text={row}
-                setLabel={(text) => {
-                  const temp = [...editContext.rowLabels];
-                  temp[i] = text;
-                  setEditContext({ rowLabels: temp });
-                }}
-              />
+              <RowLabel rowId={i} key={row.label} />
             ))}
           </div>
-          {[...Array(NBR_OF_SHIFTS)].map((e, outerIndex) => {
+          {[...Array(NBR_OF_SHIFTS)].map((_, outerIndex) => {
             return (
               <div key={outerIndex} className={styles.shift__box}>
                 <ColumnLabel
@@ -213,62 +174,62 @@ export const Scheduler = () => {
                       outerIndex * entriesPerColumn + entriesPerColumn
                     )
                     .map((item, innerIndex) => {
+                      const lastCol = outerIndex === NBR_OF_SHIFTS - 1;
                       const index = innerIndex + outerIndex * entriesPerColumn;
                       const isActiveElement =
                         typeof activeElement !== "undefined" &&
-                        activeElement === shiftSpotRefs.current[index];
+                        activeElement === shiftSpotRefs.current[index].element;
+
                       return (
                         <div
                           className={styles.shift__spot}
-                          ref={(el) => (shiftSpotRefs.current[index] = el)}
+                          ref={(el) => {
+                            if (el === null) return;
+
+                            shiftSpotRefs.current[index] = {
+                              element: el,
+                              boundingClientRect: el.getBoundingClientRect(),
+                            };
+                          }}
                           key={index}
                         >
                           {item.ticket && (
                             <div
-                              className={`${styles["shift__spot--active"]} ${
+                              className={`${shiftSpotStyles["shift-spot"]} ${
                                 isActiveElement &&
-                                styles["shift__spot--active--grabbed"]
+                                shiftSpotStyles["shift-spot__grabbed"]
+                              } ${
+                                item.ticket.comment !== null &&
+                                item.ticket.comment !== "" &&
+                                shiftSpotStyles["shift-spot__tooltip"]
+                              } ${
+                                lastCol &&
+                                shiftSpotStyles["shift-spot__tooltip--left"]
                               }`}
                               style={{
                                 transform: isActiveElement
-                                  ? `translate(${calculatePosition()?.x}px, ${
-                                      calculatePosition()?.y
-                                    }px)`
+                                  ? `translate(${position?.x}px, ${position?.y}px)`
                                   : "",
-                                background: item.ticket.color,
-                                color:
-                                  item.ticket.color === "#003057" ? "#FFF" : "",
+                                ...getColorStyles(item.ticket.color),
                               }}
                               draggable="false"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                              }}
+                              onClick={(event) => event.stopPropagation()}
                               onMouseDown={(event) =>
-                                onMouseDown(event, shiftSpotRefs.current[index])
+                                onMouseDown(
+                                  event,
+                                  shiftSpotRefs.current[index].element
+                                )
                               }
-                              onMouseUp={(event) => {
-                                let shiftId;
-                                const shiftSpot = shiftSpotRefs.current.find(
-                                  (item, index) => {
-                                    if (!item) {
-                                      return false;
-                                    }
-                                    const isDroppedInShiftSpot =
-                                      isDroppedInBounds(
-                                        item.getBoundingClientRect()
-                                      );
-                                    if (isDroppedInShiftSpot) {
-                                      shiftId = index;
-                                    }
-                                    return isDroppedInShiftSpot;
-                                  }
-                                );
-                                if (shiftSpot && typeof shiftId === "number") {
-                                  const temp = JSON.parse(
+                              onMouseUp={() => {
+                                const shiftId = getDroppedIntoShiftSpotId();
+                                const isDroppedInShiftSpot = shiftId > -1;
+
+                                if (isDroppedInShiftSpot) {
+                                  const temp: ShiftSpot[] = JSON.parse(
                                     JSON.stringify(shiftSpots)
                                   );
-                                  let tempTicket;
-                                  let existingCardInSpot;
+                                  let tempTicket: Ticket | undefined;
+                                  let existingCardInSpot: Ticket | undefined;
                                   if (
                                     typeof temp[shiftId].ticket !== "undefined"
                                   ) {
@@ -286,31 +247,31 @@ export const Scheduler = () => {
                                       : undefined;
                                   }
                                   if (tempTicket) {
-                                    temp[shiftId].ticket = {
-                                      id: tempTicket.id,
-                                      text: tempTicket.text,
-                                      color: tempTicket.color,
-                                    };
+                                    temp[shiftId].ticket = { ...tempTicket };
                                   }
                                   setShiftSpots(temp);
                                 }
                                 setActiveElement(undefined);
+                                setGrabCoordinates(undefined);
                               }}
+                              /* This is only used with .shift-spot--tooltip */
+                              data-comment={item.ticket.comment}
                             >
                               {item.ticket.text}
                               <button
                                 type="button"
                                 className={styles.button}
-                                onClick={(event) => {
+                                onClick={() => {
                                   if (typeof item.ticket === "undefined") {
                                     return;
                                   }
-                                  const tempCards = JSON.parse(
+
+                                  const tempCards: Ticket[] = JSON.parse(
                                     JSON.stringify(cards)
                                   );
                                   tempCards[item.ticket.id] = item.ticket;
                                   setCards(tempCards);
-                                  const tempShifts = JSON.parse(
+                                  const tempShifts: ShiftSpot[] = JSON.parse(
                                     JSON.stringify(shiftSpots)
                                   );
                                   tempShifts[item.id].ticket = undefined;
@@ -330,18 +291,40 @@ export const Scheduler = () => {
           })}
         </div>
       </div>
+      <button
+        className={`${styles.toggle} ${isEditMode && styles["toggle--active"]}`}
+        type="button"
+        onClick={() => toggleEditMode()}
+      >
+        {isEditMode ? "Stop editing" : "Start editing"}
+      </button>
+      <button
+        className={styles.toggle}
+        type="button"
+        onClick={() => {
+          localStorage.removeItem("cards");
+          localStorage.removeItem("shifts");
+          localStorage.removeItem("row_labels");
+          localStorage.removeItem("col_labels");
+          window.location.reload();
+        }}
+      >
+        Reset
+      </button>
       {isEditMode && (
         <div className={styles["menu-container"]}>
-          <h2>Menu</h2>
           <div className={styles["menu-container__button-wrapper"]}>
-            <TextField setTextFieldset={setTextFieldset} />
+            <TextField
+              setTextFieldset={setTextFieldset}
+              value={textFieldset}
+              label="Menu"
+            />
             <button
               onClick={() => {
                 const newCards = [...cards];
                 textFieldset.split(",").forEach((word, i) => {
-                  if (typeof newCards[i] === "undefined") {
-                    return;
-                  }
+                  if (typeof newCards[i] === "undefined") return;
+
                   newCards[i].text = word;
                 });
                 setCards(newCards);
@@ -355,4 +338,18 @@ export const Scheduler = () => {
       )}
     </div>
   );
+};
+
+const getColorStyles = (backgroundColor?: Colors) => {
+  if (typeof backgroundColor === "undefined") return;
+
+  const hasWhiteText =
+    backgroundColor === "#003057" ||
+    backgroundColor === "hotpink" ||
+    backgroundColor === "#6b8e23" ||
+    backgroundColor === "#ff5470";
+  return {
+    background: backgroundColor,
+    color: hasWhiteText ? "#FFF" : "",
+  };
 };
