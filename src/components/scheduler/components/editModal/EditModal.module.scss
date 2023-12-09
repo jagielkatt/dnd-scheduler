@@ -9,8 +9,8 @@
   border: 1px solid var(--border-color);
   background-color: var(--card-background-color);
   padding: 10px;
-  height: 150px;
-  width: 200px;
+  width: 300px;
+  min-height: 150px;
 
   &-button {
     background-color: var(--button-color);

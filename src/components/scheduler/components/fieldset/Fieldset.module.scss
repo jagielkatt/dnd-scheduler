@@ -1,5 +1,7 @@
 .fieldset {
   all: unset;
+  display: grid;
+  grid-template-columns: 1fr;
 
   input {
     &:focus-visible {

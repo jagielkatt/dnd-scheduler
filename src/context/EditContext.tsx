@@ -1,10 +1,11 @@
-import React, {
+import {
   useReducer,
   createContext,
   FunctionComponent,
   PropsWithChildren,
   useEffect,
 } from "react";
+import { levelColors } from "../utils/Colors";
 
 const DEFAULT_COL_NAMES = [
   "Skift A",
@@ -13,10 +14,14 @@ const DEFAULT_COL_NAMES = [
   "Skift D",
   "Skift E",
 ];
+
+export type Colors = (typeof levelColors)[number];
+
 export interface Ticket {
   id: number;
   text: string | null;
-  color?: string;
+  color?: Colors;
+  comment: string | null;
 }
 
 export interface ShiftSpot {
@@ -24,9 +29,14 @@ export interface ShiftSpot {
   ticket?: Ticket;
 }
 
+export interface Row {
+  label: string;
+  color?: string;
+}
+
 export interface EditContextState {
   isEditMode: boolean;
-  rowLabels: string[];
+  rowLabels: Row[];
   columnLabels: string[];
   cards: Ticket[];
   shiftSpots: ShiftSpot[];
@@ -48,7 +58,7 @@ function stateReducer(
   return { ...state, ...newState };
 }
 
-export const NBR_OF_ENTRIES = 60;
+export const NBR_OF_ENTRIES = 75;
 export const NBR_OF_SHIFTS = 5;
 
 export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
@@ -58,21 +68,27 @@ export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
     isEditMode: true,
     cards: localStorage.getItem("cards")
       ? JSON.parse(localStorage.getItem("cards")!)
-      : [...Array(NBR_OF_ENTRIES)].map((e, i) => ({
-          id: i,
-          text: "",
-          color: "#FFF",
-        })),
+      : [...Array(NBR_OF_ENTRIES)].map(
+          (e, i) =>
+            ({
+              id: i,
+              text: "",
+              color: "#FFF",
+              comment: "",
+            } satisfies Ticket)
+        ),
     shiftSpots: localStorage.getItem("shifts")
       ? JSON.parse(localStorage.getItem("shifts")!)
-      : [...Array(NBR_OF_ENTRIES)].map((e, i) => ({
-          id: i,
-          ticket: undefined,
-        })),
+      : [...Array(NBR_OF_ENTRIES)].map(
+          (e, i) =>
+            ({
+              id: i,
+            } satisfies ShiftSpot)
+        ),
     rowLabels: localStorage.getItem("row_labels")
       ? JSON.parse(localStorage.getItem("row_labels")!)
       : [...Array(NBR_OF_ENTRIES / NBR_OF_SHIFTS)].map((_, index) => {
-          return `Rad ${index + 1}`;
+          return { label: `Rad ${index + 1}` } satisfies Row;
         }),
     columnLabels: localStorage.getItem("col_labels")
       ? JSON.parse(localStorage.getItem("col_labels")!)
@@ -100,40 +116,4 @@ export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
       {children}
     </EditContext.Provider>
   );
-};
-
-export function useEditContext() {
-  const context = React.useContext(EditContext);
-  if (context === undefined) {
-    throw new Error("useEditContext must be used within a EditContextProvider");
-  }
-  return context;
-}
-
-export const useCards = () => {
-  const editContext = useEditContext();
-  return {
-    cards: editContext.state.cards,
-    setCards: (cards: Ticket[]) => editContext.setState({ cards }),
-  };
-};
-
-export const useShiftSpots = () => {
-  const editContext = useEditContext();
-  return {
-    shiftSpots: editContext.state.shiftSpots,
-    setShiftSpots: (shiftSpots: ShiftSpot[]) =>
-      editContext.setState({ shiftSpots }),
-  };
-};
-
-export const useIsEditMode = () => {
-  const editContext = useEditContext();
-  return {
-    isEditMode: editContext.state.isEditMode,
-    toggleEditMode: () =>
-      editContext.setState({
-        isEditMode: !editContext.state.isEditMode,
-      }),
-  };
 };

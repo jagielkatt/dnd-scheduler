@@ -1,0 +1,9 @@
+.color-button {
+  width: 25px;
+  cursor: pointer;
+  aspect-ratio: 1;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
