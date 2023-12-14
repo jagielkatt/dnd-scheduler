@@ -11,19 +11,18 @@ import { Icon } from "../icons/Icon";
 import { CardContent } from "./components/cardContent/CardContent";
 import { ColumnLabel } from "./components/colLabel/ColumnLabel";
 import { RowLabel } from "./components/rowLabel/RowLabel";
-import { TextField } from "./components/textField/TextField";
-import styles from "./Scheduler.module.scss";
-import shiftSpotStyles from "./ShiftSpot.module.scss";
 import { useCards } from "../../hooks/useCards";
 import { useShiftSpots } from "../../hooks/useShiftSpots";
-import { useEditMode } from "../../hooks/useEditMode";
 import { useEditContext } from "../../context/useEditContext";
+import { BottomMenu } from "./components/bottomMenu/BottomMenu";
+
+import styles from "./Scheduler.module.scss";
+import shiftSpotStyles from "./ShiftSpot.module.scss";
 
 export const Scheduler = () => {
   const { state: editContext, setState: setEditContext } = useEditContext();
   const { cards, setCards } = useCards();
   const { shiftSpots, setShiftSpots } = useShiftSpots();
-  const { isEditMode, toggleEditMode } = useEditMode();
   const container = useRef<HTMLDivElement>(null);
   const mousePosition = useMousePosition(container);
   const [activeElement, setActiveElement] = useState<HTMLDivElement | null>();
@@ -35,7 +34,6 @@ export const Scheduler = () => {
     Array<{ element: HTMLDivElement | null; boundingClientRect: DOMRect }>
   >([]);
   const cardsRef = useRef<Array<HTMLDivElement | null>>([]);
-  const [textFieldset, setTextFieldset] = useState("");
 
   const calculateTransformCoordinates = () => {
     const containerBounds = container.current?.getBoundingClientRect();
@@ -153,7 +151,7 @@ export const Scheduler = () => {
         <div className={styles.shift}>
           <div className={styles["shift__label-row"]}>
             {editContext.rowLabels.map((row, i) => (
-              <RowLabel rowId={i} key={row.label} />
+              <RowLabel rowId={i} key={i} />
             ))}
           </div>
           {[...Array(NBR_OF_SHIFTS)].map((_, outerIndex) => {
@@ -291,51 +289,7 @@ export const Scheduler = () => {
           })}
         </div>
       </div>
-      <button
-        className={`${styles.toggle} ${isEditMode && styles["toggle--active"]}`}
-        type="button"
-        onClick={() => toggleEditMode()}
-      >
-        {isEditMode ? "Stop editing" : "Start editing"}
-      </button>
-      <button
-        className={styles.toggle}
-        type="button"
-        onClick={() => {
-          localStorage.removeItem("cards");
-          localStorage.removeItem("shifts");
-          localStorage.removeItem("row_labels");
-          localStorage.removeItem("col_labels");
-          window.location.reload();
-        }}
-      >
-        Reset
-      </button>
-      {isEditMode && (
-        <div className={styles["menu-container"]}>
-          <div className={styles["menu-container__button-wrapper"]}>
-            <TextField
-              setTextFieldset={setTextFieldset}
-              value={textFieldset}
-              label="Menu"
-            />
-            <button
-              onClick={() => {
-                const newCards = [...cards];
-                textFieldset.split(",").forEach((word, i) => {
-                  if (typeof newCards[i] === "undefined") return;
-
-                  newCards[i].text = word;
-                });
-                setCards(newCards);
-              }}
-              className={styles["menu-container__button"]}
-            >
-              Fill
-            </button>
-          </div>
-        </div>
-      )}
+      <BottomMenu />
     </div>
   );
 };

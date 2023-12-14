@@ -62,4 +62,6 @@ h6 {
   --hover-color: #3da9fc;
 
   --space: 10px;
+
+  --grabbed-z-index: 2;
 }

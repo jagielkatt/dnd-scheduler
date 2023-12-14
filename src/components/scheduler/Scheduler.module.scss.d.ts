@@ -7,15 +7,10 @@ declare const classNames: {
   readonly "shift__label-row": "shift__label-row";
   readonly shift__row: "shift__row";
   readonly shift__spot: "shift__spot";
-  readonly "menu-container": "menu-container";
-  readonly "menu-container__button-wrapper": "menu-container__button-wrapper";
-  readonly "menu-container__button": "menu-container__button";
   readonly "card-list": "card-list";
   readonly "empty-box": "empty-box";
   readonly box: "box";
   readonly "box--active": "box--active";
   readonly button: "button";
-  readonly toggle: "toggle";
-  readonly "toggle--active": "toggle--active";
 };
 export = classNames;
