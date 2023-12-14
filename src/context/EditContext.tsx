@@ -34,12 +34,18 @@ export interface Row {
   color?: string;
 }
 
+export interface ColorLabel {
+  label: string;
+  color: Colors;
+}
+
 export interface EditContextState {
   isEditMode: boolean;
   rowLabels: Row[];
   columnLabels: string[];
   cards: Ticket[];
   shiftSpots: ShiftSpot[];
+  colorLabels: ColorLabel[];
 }
 
 export interface EditContextProps {
@@ -68,31 +74,31 @@ export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
     isEditMode: true,
     cards: localStorage.getItem("cards")
       ? JSON.parse(localStorage.getItem("cards")!)
-      : [...Array(NBR_OF_ENTRIES)].map(
-          (e, i) =>
-            ({
-              id: i,
-              text: "",
-              color: "#FFF",
-              comment: "",
-            } satisfies Ticket)
-        ),
+      : [...Array(NBR_OF_ENTRIES)].map((e, i) => ({
+          id: i,
+          text: "",
+          color: "#FFF",
+          comment: "",
+        })),
     shiftSpots: localStorage.getItem("shifts")
       ? JSON.parse(localStorage.getItem("shifts")!)
-      : [...Array(NBR_OF_ENTRIES)].map(
-          (e, i) =>
-            ({
-              id: i,
-            } satisfies ShiftSpot)
-        ),
+      : [...Array(NBR_OF_ENTRIES)].map((e, id) => ({
+          id,
+        })),
     rowLabels: localStorage.getItem("row_labels")
       ? JSON.parse(localStorage.getItem("row_labels")!)
-      : [...Array(NBR_OF_ENTRIES / NBR_OF_SHIFTS)].map((_, index) => {
-          return { label: `Rad ${index + 1}` } satisfies Row;
-        }),
+      : [...Array(NBR_OF_ENTRIES / NBR_OF_SHIFTS)].map((_, index) => ({
+          label: `Rad ${index + 1}`,
+        })),
     columnLabels: localStorage.getItem("col_labels")
       ? JSON.parse(localStorage.getItem("col_labels")!)
       : DEFAULT_COL_NAMES,
+    colorLabels: localStorage.getItem("color_labels")
+      ? JSON.parse(localStorage.getItem("color_labels")!)
+      : levelColors.map((color) => ({
+          label: "Färgbeskrivning",
+          color,
+        })),
   });
 
   useEffect(() => {
@@ -110,6 +116,10 @@ export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
   useEffect(() => {
     localStorage.setItem("col_labels", JSON.stringify(state.columnLabels));
   }, [state.columnLabels]);
+
+  useEffect(() => {
+    localStorage.setItem("color_labels", JSON.stringify(state.colorLabels));
+  }, [state.colorLabels]);
 
   return (
     <EditContext.Provider value={{ state, setState }}>

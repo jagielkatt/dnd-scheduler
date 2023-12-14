@@ -12,7 +12,7 @@ export const EditModal = ({
     <div
       className={styles["edit-modal"]}
       onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === "Escape") {
+        if (event.key === "Escape") {
           setEdit((pre) => !pre);
           event.stopPropagation();
           event.preventDefault();

@@ -1,0 +1,33 @@
+.colors-description {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  &-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2px;
+
+    &__square {
+      height: 40px;
+      border: 2px solid var(--border-color);
+      aspect-ratio: 1;
+      margin-right: var(--space);
+    }
+
+    &__label {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      cursor: pointer;
+      width: 100%;
+
+      &-header {
+        flex-basis: 80%;
+      }
+
+      svg {
+        flex-shrink: 0;
+      }
+    }
+  }
+}

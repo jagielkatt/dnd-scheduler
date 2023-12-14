@@ -28,6 +28,7 @@
       visibility: hidden;
       position: absolute;
       opacity: 0;
+      text-align: left;
     }
 
     &:before {
@@ -46,7 +47,7 @@
       background-color: #181818;
       color: #fff;
       border-radius: 4px;
-      z-index: 2;
+      z-index: var(--grabbed-z-index);
     }
   }
 
@@ -68,6 +69,6 @@
     background-color: var(--hover-color);
     box-shadow: 5px 10px 10px hsl(0deg 0% 0% / 0.34);
     cursor: grabbing;
-    z-index: 2;
+    z-index: var(--grabbed-z-index);
   }
 }
