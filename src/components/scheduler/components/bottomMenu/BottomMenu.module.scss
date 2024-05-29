@@ -2,6 +2,7 @@
   padding: var(--space);
   display: grid;
   grid-template-columns: 1fr 1fr;
+  padding-bottom: 40px;
 
   .toggle {
     all: unset;
