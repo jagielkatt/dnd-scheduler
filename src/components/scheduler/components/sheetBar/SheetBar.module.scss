@@ -1,0 +1,38 @@
+.sheet-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  width: 100%;
+  background-color: lightgray;
+  border-top: 2px solid var(--border-color);
+}
+
+.sheet-add-button {
+  border: 0;
+  border-right: 2px solid var(--border-color);
+  padding: 6px 16px;
+  background-color: transparent;
+  cursor: pointer;
+
+  &:hover {
+    background-color: aliceblue;
+  }
+}
+
+.sheet-button {
+  border: 0;
+  border-right: 2px solid var(--border-color);
+  padding: 6px 16px;
+  background-color: transparent;
+  cursor: pointer;
+
+  &:hover {
+    background-color: aliceblue;
+  }
+
+  &--active {
+    font-weight: bold;
+    background-color: white;
+  }
+}

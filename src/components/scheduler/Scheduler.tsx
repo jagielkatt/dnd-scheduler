@@ -1,11 +1,5 @@
 import React, { useRef, useState } from "react";
-import {
-  ShiftSpot,
-  NBR_OF_ENTRIES,
-  NBR_OF_SHIFTS,
-  Ticket,
-  Colors,
-} from "../../context/EditContext";
+import { ShiftSpot, Ticket, Colors } from "../../context/EditContext";
 import { useMousePosition } from "../../hooks/useMousePosition";
 import { Icon } from "../icons/Icon";
 import { CardContent } from "./components/cardContent/CardContent";
@@ -14,10 +8,10 @@ import { RowLabel } from "./components/rowLabel/RowLabel";
 import { useCards } from "../../hooks/useCards";
 import { useShiftSpots } from "../../hooks/useShiftSpots";
 import { useEditContext } from "../../context/useEditContext";
-import { BottomMenu } from "./components/bottomMenu/BottomMenu";
 
 import styles from "./Scheduler.module.scss";
 import shiftSpotStyles from "./ShiftSpot.module.scss";
+import { NBR_OF_ENTRIES, NBR_OF_SHIFTS } from "../../context/SheetConfig";
 
 export const Scheduler = () => {
   const { state: editContext, setState: setEditContext } = useEditContext();
@@ -289,7 +283,6 @@ export const Scheduler = () => {
           })}
         </div>
       </div>
-      <BottomMenu />
     </div>
   );
 };
