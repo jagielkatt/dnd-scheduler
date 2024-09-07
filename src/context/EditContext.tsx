@@ -109,6 +109,15 @@ export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
       ) as SheetState;
       setState(sheet);
     }
+    const sheetsConfig = JSON.parse(
+      localStorage.getItem(SHEETS_CONFIG_KEY) || "[]"
+    ) as SheetConfig;
+    const hasMigratedObject = sheetsConfig.sheets.some(
+      (sheet) => typeof sheet !== "string"
+    );
+    if (!hasMigratedObject) {
+      migrateSheets();
+    }
   }, []);
 
   useEffect(() => {
@@ -129,7 +138,7 @@ export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
 
 export interface SheetConfig {
   activeSheet: string;
-  sheets: Array<string>;
+  sheets: Array<{ sheetId: string; displayName: string }>;
 }
 const migrateData = () => {
   // Retrieve data from local storage
@@ -162,6 +171,25 @@ const migrateData = () => {
     JSON.stringify({
       activeSheet: DEFAULT_FIRST_SHEET_NAME,
       sheets: [DEFAULT_FIRST_SHEET_NAME],
+    })
+  );
+};
+
+const migrateSheets = () => {
+  const sheetsConfig = JSON.parse(
+    localStorage.getItem("sheetsConfig")!
+  ) as SheetConfig;
+  const sheets = sheetsConfig.sheets.map((sheet, index) => {
+    return {
+      sheetId: sheet,
+      displayName: `Sheet ${index + 1}`,
+    };
+  });
+  localStorage.setItem(
+    SHEETS_CONFIG_KEY,
+    JSON.stringify({
+      activeSheet: DEFAULT_FIRST_SHEET_NAME,
+      sheets: sheets,
     })
   );
 };
