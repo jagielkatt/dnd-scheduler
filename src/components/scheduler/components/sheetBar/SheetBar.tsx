@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./SheetBar.module.scss";
 import {
   SheetConfig,
@@ -14,10 +14,17 @@ import {
   SHEETS_CONFIG_KEY,
 } from "../../../../context/SheetConfig.ts";
 import { levelColors } from "../../../../utils/Colors.ts";
+import { EditModal } from "../editModal/EditModal.tsx";
+import { createPortal } from "react-dom";
+import { Fieldset } from "../fieldset/Fieldset.tsx";
 
 export const SheetBar = () => {
   const [sheetConfigState, setSheetConfigState] = useState<SheetConfig>();
+  const [edit, setEdit] = useState(false);
+  const [isEditingSheet, setIsEditingSheet] =
+    useState<SheetConfig["sheets"][number]>();
   const { setState } = useEditContext();
+  const firstInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const sheetsItem = localStorage.getItem(SHEETS_CONFIG_KEY);
@@ -28,20 +35,49 @@ export const SheetBar = () => {
     setSheetConfigState(sheetsConfig);
   }, []);
 
+  const onDone = useCallback(() => {
+    if (typeof isEditingSheet === "undefined") {
+      return;
+    }
+    const sheetConfig: SheetConfig = JSON.parse(
+      localStorage.getItem(SHEETS_CONFIG_KEY)!
+    );
+    const configCopy = { ...sheetConfig };
+    const sheetsCopy = [...sheetConfig.sheets];
+    const sheetIndex = sheetsCopy.findIndex(
+      (sheet) => sheet.sheetId === isEditingSheet.sheetId
+    );
+    if (sheetIndex < 0) {
+      return;
+    }
+
+    sheetsCopy[sheetIndex] = { ...isEditingSheet };
+    const newConfigState = {
+      activeSheet: configCopy.activeSheet,
+      sheets: [...sheetsCopy],
+    };
+    setSheetConfigState(newConfigState);
+    localStorage.setItem(SHEETS_CONFIG_KEY, JSON.stringify(newConfigState));
+    setIsEditingSheet(undefined);
+  }, [isEditingSheet]);
+
   return (
     <div className={styles["sheet-bar"]}>
       <button
         className={styles["sheet-add-button"]}
         onClick={() => {
-          console.log("Add sheet button is pushed");
           const previousState = sheetConfigState;
           if (!previousState) {
             return;
           }
-          const newSheetId = `sheet${previousState.sheets.length + 1}`;
+
+          const newSheetConfig: SheetConfig["sheets"][number] = {
+            sheetId: `sheet${previousState.sheets.length + 1}`,
+            displayName: `Sheet ${previousState.sheets.length + 1}`,
+          };
           const newConfigState = {
             activeSheet: previousState.activeSheet,
-            sheets: [...previousState.sheets, newSheetId],
+            sheets: [...previousState.sheets, newSheetConfig],
           };
           setSheetConfigState(newConfigState);
           localStorage.setItem(
@@ -49,8 +85,8 @@ export const SheetBar = () => {
             JSON.stringify(newConfigState)
           );
           localStorage.setItem(
-            newSheetId,
-            JSON.stringify(generateDefaultSheet(newSheetId))
+            newSheetConfig.sheetId,
+            JSON.stringify(generateDefaultSheet(newSheetConfig.sheetId))
           );
         }}
       >
@@ -59,7 +95,8 @@ export const SheetBar = () => {
           <line x1="12" x2="12" y1="0" y2="24" stroke="black" strokeWidth="3" />
         </svg>
       </button>
-      {sheetConfigState?.sheets.map((sheetId, index) => {
+      {sheetConfigState?.sheets.map((sheetConfig, index) => {
+        const sheetId = sheetConfig.sheetId;
         return (
           <button
             className={`${styles["sheet-button"]} ${
@@ -68,9 +105,15 @@ export const SheetBar = () => {
                 : undefined
             }`}
             key={index}
-            onClick={() => {
+            onClick={(event) => {
               const sheetsItem = localStorage.getItem(sheetId);
               if (!sheetsItem) {
+                return;
+              }
+
+              if (event.shiftKey) {
+                setIsEditingSheet(sheetConfig);
+                setEdit(true);
                 return;
               }
               const sheet: SheetState = JSON.parse(sheetsItem);
@@ -91,10 +134,29 @@ export const SheetBar = () => {
               );
             }}
           >
-            Sheet {index + 1}
+            {sheetConfig.displayName}
           </button>
         );
       })}
+      {edit &&
+        createPortal(
+          <EditModal setEdit={setEdit} onDone={onDone}>
+            <Fieldset
+              label="Sheet name"
+              value={isEditingSheet?.displayName || ""}
+              setValue={(text) => {
+                setIsEditingSheet((pre) => {
+                  if (typeof pre === "undefined") {
+                    return;
+                  }
+                  return { sheetId: pre.sheetId, displayName: text };
+                });
+              }}
+              ref={firstInputRef}
+            />
+          </EditModal>,
+          document.body
+        )}
     </div>
   );
 };
