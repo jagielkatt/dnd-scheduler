@@ -4,6 +4,7 @@ import {
   FunctionComponent,
   PropsWithChildren,
   useEffect,
+  useCallback,
 } from "react";
 import { levelColors } from "../utils/Colors";
 import {
@@ -64,6 +65,7 @@ export interface SheetState {
 export interface EditContextProps {
   state: EditContextStateNew;
   setState: React.Dispatch<Partial<EditContextStateNew>>;
+  removeSheet: (sheetId: string) => void;
 }
 
 export const EditContext = createContext<EditContextProps | undefined>(
@@ -124,11 +126,28 @@ export const EditContextProvider: FunctionComponent<PropsWithChildren> = ({
     localStorage.setItem(state.sheetId, JSON.stringify(state));
   }, [state]);
 
+  const removeSheet = useCallback(
+    (sheetId: string) => {
+      if (!sheetsConfig || sheetId === sheetsConfig?.activeSheet) {
+        return;
+      }
+      const temp = { ...sheetsConfig };
+
+      temp.sheets = sheetsConfig.sheets.filter(
+        (sheet) => sheet.sheetId !== sheetId
+      );
+      localStorage.setItem(SHEETS_CONFIG_KEY, JSON.stringify(temp));
+      localStorage.removeItem(sheetId);
+    },
+    [sheetsConfig]
+  );
+
   return (
     <EditContext.Provider
       value={{
         state,
         setState,
+        removeSheet,
       }}
     >
       {children}

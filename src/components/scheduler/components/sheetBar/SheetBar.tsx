@@ -23,7 +23,7 @@ export const SheetBar = () => {
   const [edit, setEdit] = useState(false);
   const [isEditingSheet, setIsEditingSheet] =
     useState<SheetConfig["sheets"][number]>();
-  const { setState } = useEditContext();
+  const { setState, removeSheet } = useEditContext();
   const firstInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -154,6 +154,28 @@ export const SheetBar = () => {
               }}
               ref={firstInputRef}
             />
+            <button
+              className={styles["sheet-edit-button"]}
+              onClick={() => {
+                if (typeof isEditingSheet === "undefined") {
+                  return;
+                }
+                removeSheet(isEditingSheet?.sheetId);
+                setSheetConfigState((pre) => {
+                  if (typeof pre === "undefined") {
+                    return;
+                  }
+                  const temp = { ...pre };
+                  temp.sheets = pre.sheets.filter(
+                    (sheet) => sheet.sheetId !== isEditingSheet?.sheetId
+                  );
+                  return temp;
+                });
+                setEdit(false);
+              }}
+            >
+              Delete Sheet
+            </button>
           </EditModal>,
           document.body
         )}
