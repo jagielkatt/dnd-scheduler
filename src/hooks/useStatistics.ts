@@ -18,9 +18,9 @@ const colorCountObject: Record<LevelColorKeys, number> = {
 export const useStatistics = () => {
   const sheetsConfig = JSON.parse(
     localStorage.getItem("sheetsConfig")!
-  ) as SheetConfig;
+  ) as SheetConfig | null;
 
-  const sheetIds = sheetsConfig.sheets.map(({ sheetId }) => sheetId);
+  const sheetIds = sheetsConfig?.sheets.map(({ sheetId }) => sheetId) || [];
 
   const sheetStatistics: Record<string, Record<LevelColorKeys, number>> = {};
   sheetStatistics["summary"] = { ...colorCountObject };
